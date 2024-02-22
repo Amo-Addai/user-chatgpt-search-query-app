@@ -1,11 +1,14 @@
 using System;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Sqlite;
 using Microsoft.EntityFrameworkCore.SqlServer;
+using Pomelo.EntityFrameworkCore.MySql;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -29,11 +32,31 @@ namespace ChatGPTBackend
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<HttpClient>();
             services.AddControllers();
 
             // Database connection
-            services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlServer(_configuration.GetConnectionString("DefaultConnection")));
+            // Configure database context based on configuration
+            var databaseType = _configuration["DatabaseType" ?? ""];
+            switch (databaseType)
+            {
+                case "Sqlite":
+                    services.AddDbContext<AppDbContext>(options =>
+                        options.UseSqlite(_configuration.GetConnectionString("Sqlite")));
+                    break;
+                case "SqlServer":
+                    services.AddDbContext<AppDbContext>(options =>
+                        options.UseSqlServer(_configuration.GetConnectionString("SqlServer")));
+                    break;
+                case "MySql":
+                    services.AddDbContext<AppDbContext>(options =>
+                        options.UseMySql(_configuration.GetConnectionString("MySql"), new MySqlServerVersion(new Version(8, 0, 28))));
+                    break;
+                default:
+                    services.AddDbContext<AppDbContext>(options => 
+                        options.UseSqlite(_configuration.GetConnectionString("Default")));
+                    break;
+            }
 
             // JWT Authentication
             var key = Encoding.ASCII.GetBytes(_configuration["JwtSettings:Secret"] ?? "");

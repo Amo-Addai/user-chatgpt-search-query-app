@@ -17,7 +17,7 @@ class MockClient extends Mock implements http.Client {}
 void main() {
   group('Login page tests', () {
     testWidgets('Login page UI components', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(home: LoginPage()));
+      await tester.pumpWidget(const MaterialApp(home: LoginPage()));
 
       expect(find.text('Login'), findsOneWidget);
       expect(find.byType(TextField), findsNWidgets(2));
@@ -29,7 +29,7 @@ void main() {
       when(client.post(any, body: anyNamed('body')))
           .thenAnswer((_) async => http.Response('{"token": "test-token"}', 200));
 
-      final loginPage = MaterialApp(home: LoginPage());
+      const loginPage = MaterialApp(home: LoginPage());
       await tester.pumpWidget(loginPage);
 
       await tester.enterText(find.byType(TextField).first, 'test_user');
@@ -45,7 +45,7 @@ void main() {
       when(client.post(any, body: anyNamed('body')))
           .thenAnswer((_) async => http.Response('{"message": "Unauthorized"}', 401));
 
-      final loginPage = MaterialApp(home: LoginPage());
+      const loginPage = MaterialApp(home: LoginPage());
       await tester.pumpWidget(loginPage);
 
       await tester.enterText(find.byType(TextField).first, 'invalid_user');

@@ -3,10 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
+const String apiUrl = 'https://localhost:7028/'; // backend-api
+
 class MyApp extends StatelessWidget {
+  
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -14,17 +19,21 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: LoginPage(),
+      home: const LoginPage(),
     );
   }
 }
 
 class LoginPage extends StatefulWidget {
+  
+  const LoginPage({super.key});
+
   @override
   _LoginPageState createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
+  
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -33,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
     final String password = _passwordController.text;
 
     final response = await http.post(
-      Uri.parse('http://your-backend-api-url.com/login'),
+      Uri.parse('${apiUrl}login'),
       body: {
         'username': username,
         'password': password,
@@ -49,7 +58,7 @@ class _LoginPageState extends State<LoginPage> {
     } else {
       // Authentication failed
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Authentication failed'),
         ),
       );
@@ -60,44 +69,98 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Login'),
+        title: const Text('Login'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              controller: _usernameController,
-              decoration: InputDecoration(
-                labelText: 'Username',
-              ),
+      body: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          // Check the screen width to determine the layout
+          if (constraints.maxWidth < 600) {
+            // Mobile layout
+            return _buildMobileLayout();
+          } else {
+            // Desktop layout
+            return _buildDesktopLayout();
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildMobileLayout() {
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const TextField(
+            decoration: InputDecoration(
+              labelText: 'Username',
             ),
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'Password',
-              ),
+          ),
+          const SizedBox(height: 20),
+          const TextField(
+            obscureText: true,
+            decoration: InputDecoration(
+              labelText: 'Password',
             ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _login,
-              child: Text('Login'),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {},
+            child: const Text('Login'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDesktopLayout() {
+    return Center(
+      child: SizedBox(
+        width: 400,
+        child: Card(
+          elevation: 8,
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const TextField(
+                  decoration: InputDecoration(
+                    labelText: 'Username',
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const TextField(
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {},
+                  child: const Text('Login'),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
+
 }
 
 class HomePage extends StatelessWidget {
+
   final TextEditingController _queryController = TextEditingController();
+
+  HomePage({super.key});
 
   Future<void> _sendQuery(BuildContext context, String query) async {
     final response = await http.post(
-      Uri.parse('http://your-backend-api-url.com/query'),
+      Uri.parse('${apiUrl}query'),
       body: {
         'query': query,
       },
@@ -115,7 +178,7 @@ class HomePage extends StatelessWidget {
     } else {
       // Error handling
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Error occurred'),
         ),
       );
@@ -126,10 +189,10 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('ChatGPT App'),
+        title: const Text('ChatGPT App'),
         actions: [
           IconButton(
-            icon: Icon(Icons.logout),
+            icon: const Icon(Icons.logout),
             onPressed: () {
               // Implement logout functionality
               Navigator.pop(context);
@@ -144,14 +207,14 @@ class HomePage extends StatelessWidget {
           children: [
             TextField(
               controller: _queryController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Enter your query',
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () => _sendQuery(context, _queryController.text),
-              child: Text('Send Query'),
+              child: const Text('Send Query'),
             ),
           ],
         ),

@@ -8,7 +8,7 @@ namespace ChatGPTBackend.Models
         public int? Id { get; set; }
         public string? Username { get; set; }
         public string? PasswordHash { get; set; }
-        // Add other user properties as needed
+        public string? Password { get; set; } // todo: remove (Hash avaiable)
     }
 
     public class Query

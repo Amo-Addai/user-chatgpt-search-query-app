@@ -63,37 +63,80 @@ namespace ChatGPTBackend.Controllers
 
     [ApiController]
     [Route("[controller]")]
+    public class UserController : ControllerBase
+    {
+        private readonly IUserService _userService;
+
+        public UserController(IUserService userService)
+        {
+            _userService = userService;
+        }
+
+        [HttpGet("{id}")]
+        public IActionResult GetUser(string id)
+        {
+            var user = _userService.GetUserById(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return Ok(new { Data = user });
+        }
+    }
+
+    [ApiController]
+    [Route("[controller]")]
     public class QueryController : ControllerBase
     {
         private readonly IQueryService _queryService;
+        private readonly IRequestService _requestService;
 
-        public QueryController(IQueryService queryService)
+        public QueryController(IQueryService queryService, IRequestService requestService)
         {
             _queryService = queryService;
+            _requestService = requestService;
         }
 
         [HttpPost]
-        public IActionResult PostQuery(QueryRequest model)
+        public async Task<IActionResult> PostQuery(QueryRequest model)
         {
             string query = model.Text;
 
             // Handle the query and generate response
-            string response = "Response from ChatGPT API";
+            string? response = await _requestService.GetGptResponse(query);
 
-            // Save the query to the database
-            _queryService.SaveQuery(new Query
+            if (response != null) {
+                // Save the query to the database
+                _queryService.SaveQuery(new Query
+                {
+                    UserId = "USER_ID", // todo: get user id from token,
+                    QueryText = query,
+                    ResponseText = response
+                });
+            }
+            else
             {
-                UserId = "USER_ID", // todo: get user id from token,
-                QueryText = query,
-                ResponseText = response
-            });
+                response = "ChatGPT Error.";
+            }
 
             // Return response
-            return Ok(new { Response = response });
+            return Ok(new { Data = response });
+        }
+
+        [HttpGet("{userId}")]
+        public IActionResult GetUserQueries(string userId)
+        {
+            var queries = _queryService.GetUserQueries(userId);
+            if (queries == null)
+            {
+                return NotFound();
+            }
+            return Ok(new { Data = queries });
         }
     }
 
     // Models for request payloads
+
     public class LoginRequest
     {
         public string Username { get; set; } = "";
