@@ -166,8 +166,7 @@ namespace ChatGPTBackend.Services
         public IEnumerable<Query>? GetUserQueries(string userId)
         {
             // return _dataService.GetAll().Where(q => q.UserId == userId) / .Select(q => q);;
-            // return from q in _dataService.GetAll() ?? Array.Empty<Query>() where q.UserId == userId select q;
-            return _dataService.GetAll(); // TODO: Remove
+            return from q in _dataService.GetAll() ?? Array.Empty<Query>() where q.UserId == userId select q;
         }
 
         public void SaveQuery(Query query)

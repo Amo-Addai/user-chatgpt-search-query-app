@@ -184,7 +184,6 @@ class _HomePageState extends State<HomePage> {
           ),
         );
       } else {
-        // Error handling
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Error occurred'),
@@ -192,7 +191,6 @@ class _HomePageState extends State<HomePage> {
         );
       }
     } else {
-      // Error handling
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Input a Query'),
@@ -206,6 +204,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _getQueries(BuildContext context) async {
+
     setState(() {
       _isGettingQueries = true;
     });
@@ -213,23 +212,31 @@ class _HomePageState extends State<HomePage> {
     final response = await getUserQueries();
 
     if (response != null && response['data']?.length > 0) {
-      var query = null;
-      for (query in response['data']) {
-        // print('Query: ${jsonEncode(query)}');
 
-        // Display response to user
-        ScaffoldMessenger.of(context).showSnackBar(
+      // Create snack bars for each item in the response
+      List<SnackBar> snackBars = [];
+      
+      response['data'].forEach((query) {
+        snackBars.add(
           SnackBar(
             content: Text('${query['queryText']} : ${query['responseText']}'),
-            duration: Duration(seconds: 3), // Specify duration for the snackbar
+            duration: const Duration(seconds: 7),
           ),
         );
-        // Add delay between showing each snackbar
-        // Future.delayed(Duration(seconds: 5), () {});
-      
-      };
+      });
+
+      // Show all snack bars simultaneously
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Column(
+            mainAxisSize: MainAxisSize.max,
+            children: snackBars.map((snackBar) => snackBar.content!).toList(),
+          ),
+          duration: const Duration(seconds: 7),
+        ),
+      );
+
     } else {
-      // Error handling
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Error occurred'),
@@ -240,25 +247,6 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _isGettingQueries = false;
     });
-
-    /*
-    void _showSnackBars(BuildContext context) {
-      if (response != null) {
-        final snackBars = response['data']?.map((query) {
-          return SnackBar(
-            content: Text('${query['queryText']} : ${query['responseText']}'),
-          );
-        }).toList();
-
-        final snackBarQueue = SnackBarQueue(
-          snackBars: snackBars,
-          displayDuration: const Duration(seconds: 5),
-        );
-
-        snackBarQueue.start(context);
-      }
-    }
-    */
 
   }
 
