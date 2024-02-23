@@ -166,7 +166,8 @@ namespace ChatGPTBackend.Services
         public IEnumerable<Query>? GetUserQueries(string userId)
         {
             // return _dataService.GetAll().Where(q => q.UserId == userId) / .Select(q => q);;
-            return from q in _dataService.GetAll() ?? Array.Empty<Query>() where q.UserId == userId select q;
+            // return from q in _dataService.GetAll() ?? Array.Empty<Query>() where q.UserId == userId select q;
+            return _dataService.GetAll(); // TODO: Remove
         }
 
         public void SaveQuery(Query query)
@@ -199,11 +200,18 @@ namespace ChatGPTBackend.Services
             // Define request payload
             var requestPayload = new
             {
-                model = "text-davinci-003",
-                prompt = query,
-                max_tokens = 7,
-                temperature = 0
+                model = "gpt-3.5-turbo", 
+                messages = new[] { new { role = "user", content = query } },
+                temperature = 0.7,
+                // todo: deprecated props
+                // "text-davinci-003", - deprecated model
+                // prompt = query,
+                // max_tokens = 7,
             };
+
+            var response = await _httpClient.PostAsJsonAsync($"{apiUrl}/chat/completions", requestPayload);
+
+            /* // todo: manual json serialize option
 
             // Serialize request payload
             var jsonRequest = JsonSerializer.Serialize(requestPayload);
@@ -212,39 +220,52 @@ namespace ChatGPTBackend.Services
             var content = new StringContent(jsonRequest, Encoding.UTF8, new MediaTypeHeaderValue("application/json")?.MediaType ?? "application/octet-stream");
 
             // Send request to ChatGPT API
-            var response = await _httpClient.PostAsync($"{apiUrl}/completions", content);
+            var response = await _httpClient.PostAsync($"{apiUrl}/chat/completions", content);
 
-            // response.EnsureSuccessStatusCode();
-            // Or, Check if request was successful
+            */
+
+            Console.WriteLine(response);
+            
+            // Check if request was successful
             if (response.IsSuccessStatusCode)
             {
                 // Read response content
-                var jsonResponse = await response.Content.ReadAsStringAsync();
+                var jsonResponse = await response.Content.ReadAsStringAsync(); // todo: test both
+                // var jsonResponse = await response.Content.ReadAsStringAsync<dynamic>();
                 Console.WriteLine(jsonResponse);
 
                 // Deserialize response
                 var responseData = JsonSerializer.Deserialize<ChatGptResponse>(jsonResponse);
+
                 if (responseData != null)
                 {
                     Console.WriteLine(responseData);
 
                     // Return response text
-                    return responseData?.choices?[0]?.text?.Trim();
+                    return responseData?.choices?[0]?.message?.content?.Trim();
                 }
             }
+
             // Request failed, return null
             return null;
+
         }
     }
 
     public class ChatGptResponse
     {
-        public ChatGptChoice[]? choices { get; set; }
+        public List<ChatGptChoice>? choices { get; set; }
+        // public ChatGptChoice[]? choices { get; set; }
     }
 
     public class ChatGptChoice
     {
-        public string? text { get; set; }
+        public ChatGptMessage? message { get; set; }
+    }
+
+    public class ChatGptMessage
+    {
+        public string? content { get; set; }
     }
 
 }

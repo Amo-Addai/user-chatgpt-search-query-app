@@ -15,6 +15,16 @@ Future<dynamic> getFromLocalStorage(String key) async {
   return result;
 }
 
+Future<bool> removeFromLocalStorage(String key) async {
+  bool result = false;
+  final prefs = await SharedPreferences.getInstance();
+  if (['token', 'user'].contains(key)) {
+    prefs.remove(key);
+    result = true;
+  }
+  return result;
+}
+
 Future<Map<String, dynamic>?> loginUser(String username, String password) async {
   final response = await http.post(
     Uri.parse('${apiUrl}auth/login'),
@@ -45,7 +55,10 @@ Future<Map<String, dynamic>?> loginUser(String username, String password) async 
 
     return body;
 
-  } else return null;
+  } else {
+    print('Request Error');
+  }
+  return null;
 }
 
 Future<Map<String, dynamic>?> getUser() async {
@@ -62,12 +75,11 @@ Future<Map<String, dynamic>?> getUser() async {
     );
 
     if (response.statusCode == 200) {
-      print('Body: ${jsonEncode(response.body)}');
-      Map<String, dynamic> body = jsonDecode(response.body); // todo: { data: `user` }
+      // print('Body: ${jsonEncode(response.body)}');
+      Map<String, dynamic> body = jsonDecode(response.body);
       return body;
     } else {
-      print('Error');
-      return null;
+      print('Request Error');
     }
   }
   return null;
@@ -89,13 +101,13 @@ Future<Map<String, dynamic>?> postQuery(String query) async {
   );
 
   if (response.statusCode == 200) {
-    print('Body: ${jsonEncode(response.body)}');
+    // print('Body: ${jsonEncode(response.body)}');
     Map<String, dynamic> body = jsonDecode(response.body);
     return body;
   } else {
-    print('Error');
-    return null;
+    print('Request Error');
   }
+  return null;
 }
 
 Future<Map<String, dynamic>?> getUserQueries() async {
@@ -111,13 +123,18 @@ Future<Map<String, dynamic>?> getUserQueries() async {
     );
 
     if (response.statusCode == 200) {
-      print('Body: ${jsonEncode(response.body)}');
+      // print('Body: ${jsonEncode(response.body)}');
       Map<String, dynamic> body = jsonDecode(response.body);
       return body;
     } else {
-      print('Error');
-      return null;
+      print('Request Error');
     }
   }
   return null;
+}
+
+Future<void> logout() async {
+  bool response = await removeFromLocalStorage('token');
+  response = await removeFromLocalStorage('user');
+  // work with response, if required
 }

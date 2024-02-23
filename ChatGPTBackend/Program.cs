@@ -18,12 +18,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using DotNetEnv;
 
-// TODO: Find the right namespace for TEntity, for this case
-// using System.Linq.Expressions; //
-// using Microsoft.AspNetCore.Identity; //
-// using Microsoft.AspNetCore.Identity.EntityFrameworkCore; //
-// using Microsoft.EntityFrameworkCore.Metadata; //
-
 using ChatGPTBackend.Data;
 using ChatGPTBackend.Services;
 
@@ -117,7 +111,6 @@ namespace ChatGPTBackend
 
             // Services
             services.AddScoped<DbSeeder>();
-            // services.AddScoped<IDataService<TEntity>, DataService<TEntity>>(); // todo: 
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IQueryService, QueryService>();
             services.AddScoped<IRequestService, RequestService>();

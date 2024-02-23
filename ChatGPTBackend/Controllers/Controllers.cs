@@ -107,10 +107,12 @@ namespace ChatGPTBackend.Controllers
             string? response = await _requestService.GetGptResponse(query);
 
             if (response != null) {
+                // todo: Retrieve user & userId from the current request token
+                var userId = ""; // User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 // Save the query to the database
                 _queryService.SaveQuery(new Query
                 {
-                    UserId = "USER_ID", // todo: get user id from token,
+                    UserId = userId,
                     QueryText = query,
                     ResponseText = response
                 });

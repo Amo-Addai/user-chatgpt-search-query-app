@@ -47,7 +47,7 @@ class _LoginPageState extends State<LoginPage> {
 
     if (response != null) {
       // User authenticated successfully
-      Navigator.pushReplacement(
+      Navigator.push( // pushReplacement( this replaces the current screen with the new one, and doesn't keep it in the stack
         context,
         MaterialPageRoute(builder: (context) => HomePage()),
       );
@@ -172,20 +172,30 @@ class _HomePageState extends State<HomePage> {
       _isSendingQuery = true;
     });
 
-    final response = await postQuery(query);
+    if (query.length > 0) {
 
-    if (response != null) {
-      // Display response to user
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(response['data']),
-        ),
-      );
+      final response = await postQuery(query);
+
+      if (response != null) {
+        // Display response to user
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response['data']),
+          ),
+        );
+      } else {
+        // Error handling
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error occurred'),
+          ),
+        );
+      }
     } else {
       // Error handling
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Error occurred'),
+          content: Text('Input a Query'),
         ),
       );
     }
@@ -202,18 +212,22 @@ class _HomePageState extends State<HomePage> {
 
     final response = await getUserQueries();
 
-    if (response != null) {
+    if (response != null && response['data']?.length > 0) {
       var query = null;
-      if (response['data']?.length > 0) {
-        for (query in response['data']) {
-          // Display response to user
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('${query['querytext']} : ${query['responsetext']}'),
-            ),
-          );
-        }
-      }
+      for (query in response['data']) {
+        // print('Query: ${jsonEncode(query)}');
+
+        // Display response to user
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${query['queryText']} : ${query['responseText']}'),
+            duration: Duration(seconds: 3), // Specify duration for the snackbar
+          ),
+        );
+        // Add delay between showing each snackbar
+        // Future.delayed(Duration(seconds: 5), () {});
+      
+      };
     } else {
       // Error handling
       ScaffoldMessenger.of(context).showSnackBar(
@@ -222,9 +236,35 @@ class _HomePageState extends State<HomePage> {
         ),
       );
     }
+
     setState(() {
       _isGettingQueries = false;
     });
+
+    /*
+    void _showSnackBars(BuildContext context) {
+      if (response != null) {
+        final snackBars = response['data']?.map((query) {
+          return SnackBar(
+            content: Text('${query['queryText']} : ${query['responseText']}'),
+          );
+        }).toList();
+
+        final snackBarQueue = SnackBarQueue(
+          snackBars: snackBars,
+          displayDuration: const Duration(seconds: 5),
+        );
+
+        snackBarQueue.start(context);
+      }
+    }
+    */
+
+  }
+
+  Future<void> _logout() async {
+    final response = await logout();
+    // work with response, if required
   }
 
   @override
@@ -236,7 +276,7 @@ class _HomePageState extends State<HomePage> {
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
-              // Implement logout functionality
+              _logout();
               Navigator.pop(context);
             },
           ),
@@ -277,7 +317,7 @@ class _HomePageState extends State<HomePage> {
                   )
                 : ElevatedButton(
                     onPressed: () => _getQueries(context),
-                    child: const Text('Get All Queries'),
+                    child: const Text('Show Past Queries'),
                   )
           ],
         ),
