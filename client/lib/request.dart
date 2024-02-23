@@ -51,6 +51,7 @@ Future<Map<String, dynamic>?> loginUser(String username, String password) async 
 Future<Map<String, dynamic>?> getUser() async {
   String token = await getFromLocalStorage('token');
   Map<String, dynamic>? user = await getFromLocalStorage('user');
+  // print('Token: $token | User: ${jsonEncode(user)}');
 
   if (user != null) {
     final response = await http.get(
@@ -64,15 +65,17 @@ Future<Map<String, dynamic>?> getUser() async {
       print('Body: ${jsonEncode(response.body)}');
       Map<String, dynamic> body = jsonDecode(response.body); // todo: { data: `user` }
       return body;
+    } else {
+      print('Error');
+      return null;
     }
   }
   return null;
 }
 
 Future<Map<String, dynamic>?> postQuery(String query) async {
-  print('Posting Query: $query');
   String token = await getFromLocalStorage('token');
-  print('Token: $token');
+  // print('Token: $token | Query: $query');
 
   final response = await http.post(
     Uri.parse('${apiUrl}query'),
@@ -111,6 +114,9 @@ Future<Map<String, dynamic>?> getUserQueries() async {
       print('Body: ${jsonEncode(response.body)}');
       Map<String, dynamic> body = jsonDecode(response.body);
       return body;
+    } else {
+      print('Error');
+      return null;
     }
   }
   return null;
