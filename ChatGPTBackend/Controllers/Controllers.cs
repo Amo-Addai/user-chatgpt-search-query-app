@@ -101,7 +101,7 @@ namespace ChatGPTBackend.Controllers
         [HttpPost]
         public async Task<IActionResult> PostQuery(QueryRequest model)
         {
-            string query = model.Text;
+            string query = model.Query;
 
             // Handle the query and generate response
             string? response = await _requestService.GetGptResponse(query);
@@ -146,6 +146,6 @@ namespace ChatGPTBackend.Controllers
 
     public class QueryRequest
     {
-        public string Text { get; set; } = "";
+        public string Query { get; set; } = "";
     }
 }

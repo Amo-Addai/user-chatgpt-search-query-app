@@ -65,6 +65,17 @@ namespace ChatGPTBackend
                     break;
             }
 
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowSpecificOrigins",
+                    builder =>
+                    {
+                        builder // .WithOrigins("http://yourflutterclient.com") // Replace with the origin of your Flutter client
+                            .AllowAnyHeader()
+                            .AllowAnyMethod();
+                    });
+            });
+
             // JWT Authentication
             var key = Encoding.ASCII.GetBytes(_configuration["JwtSettings:Secret"] ?? "");
             services.AddAuthentication(options =>
@@ -124,6 +135,8 @@ namespace ChatGPTBackend
             app.UseHttpsRedirection();
 
             app.UseRouting();
+            
+            app.UseCors("AllowSpecificOrigins");
 
             app.UseAuthentication();
 
@@ -133,6 +146,7 @@ namespace ChatGPTBackend
             {
                 endpoints.MapControllers();
             });
+
         }
     }
 

@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import 'request.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -41,15 +43,9 @@ class _LoginPageState extends State<LoginPage> {
     final String username = _usernameController.text;
     final String password = _passwordController.text;
 
-    final response = await http.post(
-      Uri.parse('${apiUrl}login'),
-      body: {
-        'username': username,
-        'password': password,
-      },
-    );
+    final response = await loginUser(username, password) ;
 
-    if (response.statusCode == 200) {
+    if (response != null) {
       // User authenticated successfully
       Navigator.pushReplacement(
         context,
@@ -92,21 +88,23 @@ class _LoginPageState extends State<LoginPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const TextField(
-            decoration: InputDecoration(
+          TextField(
+            controller: _usernameController,
+            decoration: const InputDecoration(
               labelText: 'Username',
             ),
           ),
           const SizedBox(height: 20),
-          const TextField(
+          TextField(
+            controller: _passwordController,
             obscureText: true,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               labelText: 'Password',
             ),
           ),
           const SizedBox(height: 20),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: _login,
             child: const Text('Login'),
           ),
         ],
@@ -125,21 +123,23 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const TextField(
-                  decoration: InputDecoration(
+                TextField(
+                  controller: _usernameController,
+                  decoration: const InputDecoration(
                     labelText: 'Username',
                   ),
                 ),
                 const SizedBox(height: 20),
-                const TextField(
+                TextField(
+                  controller: _passwordController,
                   obscureText: true,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Password',
                   ),
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: _login,
                   child: const Text('Login'),
                 ),
               ],
@@ -159,20 +159,13 @@ class HomePage extends StatelessWidget {
   HomePage({super.key});
 
   Future<void> _sendQuery(BuildContext context, String query) async {
-    final response = await http.post(
-      Uri.parse('${apiUrl}query'),
-      body: {
-        'query': query,
-      },
-    );
+    final response = await postQuery(query);
 
-    if (response.statusCode == 200) {
-      // Handle response from ChatGPT API
-      final responseData = jsonDecode(response.body);
+    if (response != null) {
       // Display response to user
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(responseData['response']),
+          content: Text(response['response']),
         ),
       );
     } else {
