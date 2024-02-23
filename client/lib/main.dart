@@ -152,13 +152,26 @@ class _LoginPageState extends State<LoginPage> {
 
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
+  
+  const HomePage({super.key});
 
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  
   final TextEditingController _queryController = TextEditingController();
 
-  HomePage({super.key});
+  bool _isSendingQuery = false;
+  bool _isGettingQueries = false;
 
   Future<void> _sendQuery(BuildContext context, String query) async {
+    setState(() {
+      _isSendingQuery = true;
+    });
+
     final response = await postQuery(query);
 
     if (response != null) {
@@ -176,14 +189,22 @@ class HomePage extends StatelessWidget {
         ),
       );
     }
+
+    setState(() {
+      _isSendingQuery = false;
+    });
   }
 
   Future<void> _getQueries(BuildContext context) async {
+    setState(() {
+      _isGettingQueries = true;
+    });
+
     final response = await getUserQueries();
 
     if (response != null) {
       var query = null;
-      if (response['data'].length > 0) {
+      if (response['data']?.length > 0) {
         for (query in response['data']) {
           // Display response to user
           ScaffoldMessenger.of(context).showSnackBar(
@@ -201,6 +222,9 @@ class HomePage extends StatelessWidget {
         ),
       );
     }
+    setState(() {
+      _isGettingQueries = false;
+    });
   }
 
   @override
@@ -230,15 +254,31 @@ class HomePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => _sendQuery(context, _queryController.text),
-              child: const Text('Send Query'),
-            ),
+            _isSendingQuery
+                ? const SizedBox(
+                    height: 24,
+                    width: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 3
+                    )
+                  )
+                : ElevatedButton(
+                    onPressed: () => _sendQuery(context, _queryController.text),
+                    child: const Text('Send Query'),
+                  ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => _getQueries(context),
-              child: const Text('Get All Queries'),
-            ),
+            _isGettingQueries
+                ? const SizedBox(
+                    height: 24,
+                    width: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 3
+                    )
+                  )
+                : ElevatedButton(
+                    onPressed: () => _getQueries(context),
+                    child: const Text('Get All Queries'),
+                  )
           ],
         ),
       ),

@@ -21,7 +21,17 @@ namespace ChatGPTBackend.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int? Id { get; set; }
-        public string? UserId { get; set; }
+
+        // Private field with initializer
+        private string _userId = string.Empty;
+
+        // Public property mapped to the private field
+        public string UserId
+        {
+            get { return _userId; }
+            set { _userId = value ?? string.Empty; } // Ensure that value is never null
+        }
+        
         public string? QueryText { get; set; }
         public string? ResponseText { get; set; }
     }

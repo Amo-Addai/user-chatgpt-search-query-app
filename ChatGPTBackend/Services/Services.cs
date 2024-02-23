@@ -32,22 +32,38 @@ namespace ChatGPTBackend.Services
 
             if (dbContext?.Users != null)
             {
-                // Check if the database is already seeded
                 if (dbContext.Users.Any())
                 {
-                    Console.WriteLine("Database has already been seeded");
-                    return; // or, clean up the database, then re-seed it
+                    Console.WriteLine("Users Table has already been seeded");
                 }
-
-                // Seed the database with initial data
-                dbContext.Users.AddRange(
-                    new User { Username = "user1", Password = "password1" },
-                    new User { Username = "user2", Password = "password2" }
-                );
-
-                dbContext.SaveChanges();
+                else
+                {
+                    dbContext.Users.AddRange(
+                        new User { Username = "user1", Password = "password1" },
+                        new User { Username = "user2", Password = "password2" }
+                    );
+                    dbContext.SaveChanges();
+                }
             }
             else Console.WriteLine("Database has no User collection");
+
+
+            if (dbContext?.Queries != null)
+            {
+                if (dbContext.Queries.Any())
+                {
+                    Console.WriteLine("Queries Table has already been seeded");
+                }
+                else
+                {
+                    dbContext.Queries.AddRange(
+                        new Query { QueryText = "query1", ResponseText = "response1" },
+                        new Query { QueryText = "query2", ResponseText = "response2" }
+                    );
+                    dbContext.SaveChanges();
+                }
+            }
+            else Console.WriteLine("Database has no Query collection");
         }
     }
 
@@ -176,7 +192,7 @@ namespace ChatGPTBackend.Services
         public async Task<string?> GetGptResponse(string query)
         {
             const string apiUrl = "https://api.openai.com/v1";
-            const string apiKey = "GET FROM ENVIRONMENT";
+            string apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? "NO_API_KEY";
 
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
             
@@ -184,7 +200,7 @@ namespace ChatGPTBackend.Services
             var requestPayload = new
             {
                 model = "text-davinci-003",
-                prompt = query, // Text = query
+                prompt = query,
                 max_tokens = 7,
                 temperature = 0
             };
@@ -204,6 +220,7 @@ namespace ChatGPTBackend.Services
             {
                 // Read response content
                 var jsonResponse = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(jsonResponse);
 
                 // Deserialize response
                 var responseData = JsonSerializer.Deserialize<ChatGptResponse>(jsonResponse);

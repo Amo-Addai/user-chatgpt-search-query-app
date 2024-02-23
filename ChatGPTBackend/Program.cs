@@ -16,6 +16,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using DotNetEnv;
+
 // TODO: Find the right namespace for TEntity, for this case
 // using System.Linq.Expressions; //
 // using Microsoft.AspNetCore.Identity; //
@@ -124,6 +126,8 @@ namespace ChatGPTBackend
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, DbSeeder dbSeeder)
         {
+            // Load variables from .env file
+            DotNetEnv.Env.Load();
 
             if (env.IsDevelopment())
             {

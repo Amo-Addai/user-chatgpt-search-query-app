@@ -1,3 +1,6 @@
+# Env
+.env
+
 # Database (sqlite - default)
 sqlite.db
 
