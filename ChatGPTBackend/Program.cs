@@ -1,7 +1,10 @@
 using System;
 using System.Text;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using System.Net.Http;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -13,11 +16,15 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
+// TODO: Find the right namespace for TEntity, for this case
+// using System.Linq.Expressions; //
+// using Microsoft.AspNetCore.Identity; //
+// using Microsoft.AspNetCore.Identity.EntityFrameworkCore; //
+// using Microsoft.EntityFrameworkCore.Metadata; //
 
 using ChatGPTBackend.Data;
 using ChatGPTBackend.Services;
+
 
 namespace ChatGPTBackend
 {
@@ -95,16 +102,24 @@ namespace ChatGPTBackend
             });
 
             // Services
+            services.AddScoped<DbSeeder>();
+            // services.AddScoped<IDataService<TEntity>, DataService<TEntity>>(); // todo: 
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IQueryService, QueryService>();
+            services.AddScoped<IRequestService, RequestService>();
+            
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, DbSeeder dbSeeder)
         {
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            // Seed the database
+            dbSeeder.Seed();
 
             app.UseHttpsRedirection();
 

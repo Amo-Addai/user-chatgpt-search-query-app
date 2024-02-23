@@ -1,9 +1,13 @@
+using System;
 using System.Text;
 using System.Text.Json;
-using System.Collections.Generic;
+// using System.Collections.Generic;
+using System.Linq;
+// using System.Linq.Expressions;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 using ChatGPTBackend.Data;
 using ChatGPTBackend.Models;
@@ -11,6 +15,93 @@ using ChatGPTBackend.Models;
 
 namespace ChatGPTBackend.Services
 {
+
+    public class DbSeeder
+    {
+        private readonly IServiceProvider _serviceProvider;
+
+        public DbSeeder(IServiceProvider serviceProvider)
+        {
+            _serviceProvider = serviceProvider;
+        }
+
+        public void Seed()
+        {
+            using var scope = _serviceProvider.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            if (dbContext?.Users != null)
+            {
+                // Check if the database is already seeded
+                if (dbContext.Users.Any())
+                {
+                    Console.WriteLine("Database has already been seeded");
+                    return; // or, clean up the database, then re-seed it
+                }
+
+                // Seed the database with initial data
+                dbContext.Users.AddRange(
+                    new User { Username = "user1", Password = "password1" },
+                    new User { Username = "user2", Password = "password2" }
+                );
+
+                dbContext.SaveChanges();
+            }
+            else Console.WriteLine("Database has no User collection");
+        }
+    }
+
+    public interface IDataService<TEntity>
+    {
+        IEnumerable<TEntity> GetAll();
+        TEntity? GetById(object id);
+        void Insert(TEntity entity);
+        void Update(TEntity entity);
+        void Delete(object id);
+    }
+
+    public class DataService<TEntity> : IDataService<TEntity> where TEntity : class
+    {
+        private readonly AppDbContext _context;
+
+        public DataService(AppDbContext context)
+        {
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+        }
+
+        public IEnumerable<TEntity> GetAll()
+        {
+            return _context.Set<TEntity>();
+        }
+
+        public TEntity? GetById(object id)
+        {
+            return _context.Set<TEntity>().Find(id);
+        }
+
+        public void Insert(TEntity entity)
+        {
+            _context.Set<TEntity>().Add(entity);
+            _context.SaveChanges();
+        }
+
+        public void Update(TEntity entity)
+        {
+            _context.Set<TEntity>().Update(entity);
+            _context.SaveChanges();
+        }
+
+        public void Delete(object id)
+        {
+            TEntity? entityToDelete = _context.Set<TEntity>().Find(id);
+            if (entityToDelete != null)
+            {
+                _context.Set<TEntity>().Remove(entityToDelete);
+                _context.SaveChanges();
+            }
+        }
+    }
+
     public interface IUserService
     {
         User? Authenticate(string username, string password);
@@ -65,57 +156,6 @@ namespace ChatGPTBackend.Services
         public void SaveQuery(Query query)
         {
             _dataService.Insert(query);
-        }
-    }
-
-    public interface IDataService<TEntity>
-    {
-        IEnumerable<TEntity> GetAll();
-        TEntity? GetById(object id);
-        void Insert(TEntity entity);
-        void Update(TEntity entity);
-        void Delete(object id);
-    }
-
-    public class DataService<TEntity> : IDataService<TEntity> where TEntity : class
-    {
-        private readonly AppDbContext _context;
-
-        public DataService(AppDbContext context)
-        {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-        }
-
-        public IEnumerable<TEntity> GetAll()
-        {
-            return _context.Set<TEntity>();
-        }
-
-        public TEntity? GetById(object id)
-        {
-            return _context.Set<TEntity>().Find(id);
-        }
-
-        public void Insert(TEntity entity)
-        {
-            _context.Set<TEntity>().Add(entity);
-            _context.SaveChanges();
-        }
-
-        public void Update(TEntity entity)
-        {
-            _context.Set<TEntity>().Update(entity);
-            _context.SaveChanges();
-        }
-
-        public void Delete(object id)
-        {
-            TEntity? entityToDelete = _context.Set<TEntity>().Find(id);
-            if (entityToDelete != null)
-            {
-                _context.Set<TEntity>().Remove(entityToDelete);
-                _context.SaveChanges();
-            }
         }
     }
 

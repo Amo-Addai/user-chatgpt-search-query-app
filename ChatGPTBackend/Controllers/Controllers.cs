@@ -1,14 +1,15 @@
 using System;
 using System.Text;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 
 using ChatGPTBackend.Models;
 using ChatGPTBackend.Services;
+
 
 namespace ChatGPTBackend.Controllers
 {
