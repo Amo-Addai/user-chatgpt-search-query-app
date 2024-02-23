@@ -165,9 +165,34 @@ class HomePage extends StatelessWidget {
       // Display response to user
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(response['response']),
+          content: Text(response['data']),
         ),
       );
+    } else {
+      // Error handling
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error occurred'),
+        ),
+      );
+    }
+  }
+
+  Future<void> _getQueries(BuildContext context) async {
+    final response = await getUserQueries();
+
+    if (response != null) {
+      var query = null;
+      if (response['data'].length > 0) {
+        for (query in response['data']) {
+          // Display response to user
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${query['querytext']} : ${query['responsetext']}'),
+            ),
+          );
+        }
+      }
     } else {
       // Error handling
       ScaffoldMessenger.of(context).showSnackBar(
@@ -208,6 +233,11 @@ class HomePage extends StatelessWidget {
             ElevatedButton(
               onPressed: () => _sendQuery(context, _queryController.text),
               child: const Text('Send Query'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => _getQueries(context),
+              child: const Text('Get All Queries'),
             ),
           ],
         ),

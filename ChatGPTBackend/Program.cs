@@ -70,7 +70,8 @@ namespace ChatGPTBackend
                 options.AddPolicy("AllowSpecificOrigins",
                     builder =>
                     {
-                        builder // .WithOrigins("http://yourflutterclient.com") // Replace with the origin of your Flutter client
+                        builder 
+                            .AllowAnyOrigin() // todo: .WithOrigins("http://yourflutterclient.com") // Replace with the origin of your Flutter client
                             .AllowAnyHeader()
                             .AllowAnyMethod();
                     });

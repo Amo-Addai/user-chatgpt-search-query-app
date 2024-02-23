@@ -39,11 +39,11 @@ namespace ChatGPTBackend.Controllers
             {
                 Id = user.Id,
                 Username = user.Username,
-                Token = GenerateJwtToken(user)
-            });
+                Token = "token" // GenerateJwtToken(user) // 
+            }); // todo: actual representation: { id, username, token }
         }
 
-        // Helper method to generate JWT token
+        // TODO: Helper method to generate JWT token
         private string GenerateJwtToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
