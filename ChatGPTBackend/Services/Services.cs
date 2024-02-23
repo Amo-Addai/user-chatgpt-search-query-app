@@ -175,12 +175,18 @@ namespace ChatGPTBackend.Services
 
         public async Task<string?> GetGptResponse(string query)
         {
-            const string ChatGPTAPIEndpoint = "API/ChatGPT";
+            const string apiUrl = "https://api.openai.com/v1";
+            const string apiKey = "GET FROM ENVIRONMENT";
+
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
             
             // Define request payload
             var requestPayload = new
             {
-                Text = query
+                model = "text-davinci-003",
+                prompt = query, // Text = query
+                max_tokens = 7,
+                temperature = 0
             };
 
             // Serialize request payload
@@ -190,30 +196,38 @@ namespace ChatGPTBackend.Services
             var content = new StringContent(jsonRequest, Encoding.UTF8, new MediaTypeHeaderValue("application/json")?.MediaType ?? "application/octet-stream");
 
             // Send request to ChatGPT API
-            var response = await _httpClient.PostAsync(ChatGPTAPIEndpoint, content);
+            var response = await _httpClient.PostAsync($"{apiUrl}/completions", content);
 
-            // Check if request was successful
+            // response.EnsureSuccessStatusCode();
+            // Or, Check if request was successful
             if (response.IsSuccessStatusCode)
             {
                 // Read response content
                 var jsonResponse = await response.Content.ReadAsStringAsync();
 
                 // Deserialize response
-                var responseObject = JsonSerializer.Deserialize<ChatGptResponse>(jsonResponse);
+                var responseData = JsonSerializer.Deserialize<ChatGptResponse>(jsonResponse);
+                if (responseData != null)
+                {
+                    Console.WriteLine(responseData);
 
-                // Return response text
-                return responseObject?.ResponseText;
+                    // Return response text
+                    return responseData?.choices?[0]?.text?.Trim();
+                }
             }
-            else
-            {
-                // Request failed, return null
-                return null;
-            }
+            // Request failed, return null
+            return null;
         }
     }
 
     public class ChatGptResponse
     {
-        public string? ResponseText { get; set; }
+        public ChatGptChoice[]? choices { get; set; }
     }
+
+    public class ChatGptChoice
+    {
+        public string? text { get; set; }
+    }
+
 }
