@@ -78,7 +78,14 @@ Run the project in the Chromium browser
 flutter run -d chrome
 ```
 
-### Alternatives
+Sample Users for logging in
+
+```
+User 1 - { Username = "user1", Password = "password1" }
+User 2 - { Username = "user2", Password = "password2" }
+```
+
+### Running on Alternative Devices
 
 - Run Android Studio and an Android Emulator
 - Run XCode 15 and iOS Simulator
