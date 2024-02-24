@@ -1,0 +1,49 @@
+# Env
+.env
+
+# Flutter
+# See https://flutter.dev/docs/development/tools/sdk/releases for version-specific info
+**/ios/Flutter/.last_build_id
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/App.framework
+**/ios/Flutter/App.xcconfig
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/Flutter/flutter_project.pbxproj
+**/ios/Flutter/flutter_assets/
+**/ios/Flutter/flutter_export_environment.plist
+/build/
+/.idea/
+/.dart_tool/
+.dart_tool/
+.dart_tool/**
+.dart_tool/
+.idea/
+.pub/
+.pub-cache/
+.pub-cache/**
+.pub-cache/
+# For iOS
+.DS_Store
+.vscode/
+.idea/
+*.iml
+/out/
+.packages
+*.lock
+*.log
+*.apk
+*.ap_
+*.ipr
+*.iws
+*.classpath
+*.project
+*.sln
+*.suo
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+*/bin/*
+*/bin/cache/*
