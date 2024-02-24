@@ -47,7 +47,6 @@ namespace ChatGPTBackend.Services
             }
             else Console.WriteLine("Database has no User collection");
 
-
             if (dbContext?.Queries != null)
             {
                 if (dbContext.Queries.Any())
@@ -142,7 +141,7 @@ namespace ChatGPTBackend.Services
 
         public User? GetUserById(string id)
         {
-            return _dataService.GetById(id);
+            return _dataService.GetById(Convert.ToInt32(id));
         }
     }
 

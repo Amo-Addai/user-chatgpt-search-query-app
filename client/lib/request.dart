@@ -49,9 +49,9 @@ Future<Map<String, dynamic>?> loginUser(String username, String password) async 
     prefs.setString('token', token);
     prefs.setString('user', jsonEncode((body)));
 
-    // todo: Output the results (or remove)
-    // print('Token: $token');
-    // print('Body: ${jsonEncode(body)}');
+    // todo: Output these results (or remove)
+    print('Token: $token');
+    print('Body: ${jsonEncode(body)}');
 
     return body;
 

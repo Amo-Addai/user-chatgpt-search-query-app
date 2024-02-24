@@ -3,11 +3,14 @@ using System.Text;
 using System.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 using ChatGPTBackend.Models;
+using ChatGPTBackend.Middlewares;
 using ChatGPTBackend.Services;
 
 
@@ -39,26 +42,53 @@ namespace ChatGPTBackend.Controllers
             {
                 Id = user.Id,
                 Username = user.Username,
-                Token = "token" // GenerateJwtToken(user) // 
-            }); // todo: actual representation: { id, username, token }
+                Token = GenerateJwtToken(user)
+            }); // todo: response data representation on client: { id, username, token }
         }
 
-        // TODO: Helper method to generate JWT token
         private string GenerateJwtToken(User user)
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_configuration["JwtSettings:Secret"] ?? "");
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new Claim[]
+            try {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                string? secret = (_configuration["JwtSettings:Secret"] ?? "").Length > 1 
+                    ? _configuration["JwtSettings:Secret"] 
+                    : GenerateRandomKey(32);
+                var key = Encoding.ASCII.GetBytes(secret ?? "");
+                var tokenDescriptor = new SecurityTokenDescriptor
                 {
-                    new Claim("id", user?.Id?.ToString() ?? String.Empty)
-                }),
-                Expires = DateTime.UtcNow.AddDays(7),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+                    Subject = new ClaimsIdentity(new Claim[]
+                    {
+                        new Claim(ClaimTypes.NameIdentifier, $"{user?.Id}")
+                    }),
+                    Expires = DateTime.UtcNow.AddDays(7),
+                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                };
+                var token = tokenHandler.CreateToken(tokenDescriptor);
+                return tokenHandler.WriteToken(token);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return "token";
+            }
+        }
+
+        private string GenerateRandomKey(int keySizeInBytes)
+        {
+            // Create a new byte array to store the key
+            byte[] key = new byte[keySizeInBytes];
+
+            // Use RNGCryptoServiceProvider to generate a secure random key
+            using (var rng = RandomNumberGenerator.Create()) // new RNGCryptoServiceProvider()) - obsolete method
+            {
+                rng.GetBytes(key);
+            }
+
+            // Convert the byte array to a base64-encoded string
+            string base64Key = Convert.ToBase64String(key);
+
+            // Console.WriteLine(base64Key);
+            return base64Key;
         }
     }
 
@@ -66,10 +96,12 @@ namespace ChatGPTBackend.Controllers
     [Route("[controller]")]
     public class UserController : ControllerBase
     {
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUserService _userService;
 
-        public UserController(IUserService userService)
+        public UserController(IHttpContextAccessor httpContextAccessor, IUserService userService)
         {
+            _httpContextAccessor = httpContextAccessor;
             _userService = userService;
         }
 
@@ -87,13 +119,18 @@ namespace ChatGPTBackend.Controllers
 
     [ApiController]
     [Route("[controller]")]
+    [ServiceFilter(typeof(JwtAuthFilter))]
     public class QueryController : ControllerBase
     {
+        public IConfiguration _configuration { get; }
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IQueryService _queryService;
         private readonly IRequestService _requestService;
 
-        public QueryController(IQueryService queryService, IRequestService requestService)
+        public QueryController(IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IQueryService queryService, IRequestService requestService)
         {
+            _configuration = configuration;
+            _httpContextAccessor = httpContextAccessor;
             _queryService = queryService;
             _requestService = requestService;
         }
@@ -102,13 +139,42 @@ namespace ChatGPTBackend.Controllers
         public async Task<IActionResult> PostQuery(QueryRequest model)
         {
             string query = model.Query;
+            
+            string? userId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+            Console.WriteLine($"1 - {userId}");
+            
+            userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier) ?? "";
+            Console.WriteLine($"2 - {userId}");
+
+            userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+            Console.WriteLine($"3 - {userId}");
+
+            userId = _httpContextAccessor.HttpContext?.Items?["Authorized-User-Id"]?.ToString() ?? "";
+            Console.WriteLine($"4 - {userId}");
+
+            userId = HttpContext?.Items?["Authorized-User-Id"]?.ToString();
+            Console.WriteLine($"5 - {userId}");
+
+            // Inside your controller method where you want to retrieve the userId
+            var token = HttpContext?.Request.Headers["Authorization"].ToString().Split(" ")[1]; // Assuming the token is in the Authorization header
+            var handler = new JwtSecurityTokenHandler();
+            var tokenS = handler.ReadJwtToken(token);
+            userId = tokenS.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? "";
+
+            Console.WriteLine($"6 - {userId}");
+
+            token = Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+            if (token != null)
+            {
+                userId = MiddlewareMethods.ValidateToken(token, _configuration);
+                Console.WriteLine($"7 - {userId}");
+            }
+            Console.WriteLine();
 
             // Handle the query and generate response
             string? response = await _requestService.GetGptResponse(query);
 
             if (response != null) {
-                // todo: Retrieve user & userId from the current request token
-                var userId = ""; // User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 // Save the query to the database
                 _queryService.SaveQuery(new Query
                 {

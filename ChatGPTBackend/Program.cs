@@ -19,6 +19,7 @@ using Microsoft.IdentityModel.Tokens;
 using DotNetEnv;
 
 using ChatGPTBackend.Data;
+using ChatGPTBackend.Middlewares;
 using ChatGPTBackend.Services;
 
 
@@ -74,11 +75,13 @@ namespace ChatGPTBackend
             });
 
             // JWT Authentication
+
             var key = Encoding.ASCII.GetBytes(_configuration["JwtSettings:Secret"] ?? "");
+
             services.AddAuthentication(options =>
             {
-                options.DefaultAuthenticateScheme = "JwtBearer";
-                options.DefaultChallengeScheme = "JwtBearer";
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme ?? "JwtBearer";
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme ?? "JwtBearer";
             })
             .AddJwtBearer("JwtBearer", jwtBearerOptions =>
             {
@@ -97,17 +100,28 @@ namespace ChatGPTBackend
                     OnTokenValidated = context =>
                     {
                         var userService = context.HttpContext.RequestServices.GetRequiredService<IUserService>();
-                        var userId = context.Principal?.FindFirstValue("id");
+                        var userId = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
                         if (userId != null)
                         {
                             var user = userService?.GetUserById(userId);
                             // Return unauthorized if user no longer exists
                             if (user == null) context.Fail("Unauthorized");
+                            else
+                            {
+                                // Attach user object to the HTTP context
+                                context.HttpContext.Items["Authorized-User-Id"] = $"{user?.Id}";
+                            }
                         } else context.Fail("Unauthorized");
                         return Task.CompletedTask;
                     }
                 };
             });
+
+            // Add IHttpContextAccessor
+            services.AddHttpContextAccessor();
+
+            // Filters
+            services.AddScoped<JwtAuthFilter>();
 
             // Services
             services.AddScoped<DbSeeder>();
@@ -117,7 +131,7 @@ namespace ChatGPTBackend
             
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, DbSeeder dbSeeder)
+        public void Configure(IApplicationBuilder app, IConfiguration configuration, IWebHostEnvironment env, DbSeeder dbSeeder)
         {
             // Load variables from .env file
             DotNetEnv.Env.Load();
@@ -139,6 +153,8 @@ namespace ChatGPTBackend
             app.UseAuthentication();
 
             app.UseAuthorization();
+            
+            app.UseMiddleware<JwtMiddleware>(configuration);
 
             app.UseEndpoints(endpoints =>
             {
