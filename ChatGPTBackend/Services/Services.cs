@@ -51,16 +51,16 @@ namespace ChatGPTBackend.Services
             {
                 if (dbContext.Queries.Any())
                 {
-                    Console.WriteLine("Queries Table has already been seeded");
+                    Console.WriteLine("Queries Table has already been seeded. Clearing existing data and re-seeding ...");
+
+                    // Remove all existing queries from the table
+                    dbContext.Queries.RemoveRange(dbContext.Queries);
                 }
-                else
-                {
-                    dbContext.Queries.AddRange(
-                        new Query { QueryText = "query1", ResponseText = "response1" },
-                        new Query { QueryText = "query2", ResponseText = "response2" }
-                    );
-                    dbContext.SaveChanges();
-                }
+                dbContext.Queries.AddRange(
+                    new Query { QueryText = "query1", ResponseText = "response1", UserId = "1" },
+                    new Query { QueryText = "query2", ResponseText = "response2", UserId = "2" }
+                );
+                dbContext.SaveChanges();
             }
             else Console.WriteLine("Database has no Query collection");
         }

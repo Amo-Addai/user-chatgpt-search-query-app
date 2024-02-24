@@ -50,8 +50,8 @@ Future<Map<String, dynamic>?> loginUser(String username, String password) async 
     prefs.setString('user', jsonEncode((body)));
 
     // todo: Output these results (or remove)
-    print('Token: $token');
-    print('Body: ${jsonEncode(body)}');
+    // print('Token: $token');
+    // print('Body: ${jsonEncode(body)}');
 
     return body;
 
@@ -87,7 +87,8 @@ Future<Map<String, dynamic>?> getUser() async {
 
 Future<Map<String, dynamic>?> postQuery(String query) async {
   String token = await getFromLocalStorage('token');
-  // print('Token: $token | Query: $query');
+  Map<String, dynamic>? user = await getFromLocalStorage('user');
+  // print('Token: $token | User: ${user?['id']} | Query: $query');
 
   final response = await http.post(
     Uri.parse('${apiUrl}query'),
@@ -96,7 +97,8 @@ Future<Map<String, dynamic>?> postQuery(String query) async {
       'Authorization': 'Bearer $token',
     },
     body: jsonEncode(<String, String>{
-      'Query': query,
+      'UserId': '${user?['id']}', // todo: remove when not needed anymore
+      'Query': query
     }),
   );
 

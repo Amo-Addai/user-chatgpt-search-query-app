@@ -73,6 +73,7 @@ namespace ChatGPTBackend.Controllers
             }
         }
 
+        // TODO: Generating a Random Key is inefficient; should be persisted, to be later retrieved to validate a user access-token
         private string GenerateRandomKey(int keySizeInBytes)
         {
             // Create a new byte array to store the key
@@ -139,7 +140,10 @@ namespace ChatGPTBackend.Controllers
         public async Task<IActionResult> PostQuery(QueryRequest model)
         {
             string query = model.Query;
-            
+            string userId = model.UserId; // todo: remove after it's not needed anymore
+
+            // TODO: Handle retrieving the user-id from the access-token
+            /** 
             string? userId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
             Console.WriteLine($"1 - {userId}");
             
@@ -170,6 +174,7 @@ namespace ChatGPTBackend.Controllers
                 Console.WriteLine($"7 - {userId}");
             }
             Console.WriteLine();
+            */
 
             // Handle the query and generate response
             string? response = await _requestService.GetGptResponse(query);
@@ -202,6 +207,21 @@ namespace ChatGPTBackend.Controllers
             }
             return Ok(new { Data = queries });
         }
+
+        [HttpPost("new")]
+        public IActionResult SaveQuery(SaveQueryRequest model)
+        {
+            string query = model.Query;
+            string response = model.Response;
+
+            _queryService.SaveQuery(new Query
+            {
+                UserId = "",
+                QueryText = query,
+                ResponseText = response
+            });
+            return Ok(new { Data = "Success" });
+        }
     }
 
     // Models for request payloads
@@ -214,6 +234,13 @@ namespace ChatGPTBackend.Controllers
 
     public class QueryRequest
     {
+        public string UserId { get; set; } = ""; // todo: remove when not needed anymore
         public string Query { get; set; } = "";
+    }
+
+    public class SaveQueryRequest
+    {
+        public string Query { get; set; } = "";
+        public string Response { get; set; } = "";
     }
 }

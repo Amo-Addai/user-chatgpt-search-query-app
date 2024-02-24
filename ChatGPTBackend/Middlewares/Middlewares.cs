@@ -24,7 +24,7 @@ namespace ChatGPTBackend.Middlewares
         public async Task Invoke(HttpContext context)
         {
             var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-            Console.WriteLine($"\nJwt Middleware Token - {token}\n");
+            // Console.WriteLine($"\nJwt Middleware Token - {token}\n");
             if (token != null)
             {
                 AttachUserIdToContext(context, ValidateToken(token));
@@ -40,9 +40,9 @@ namespace ChatGPTBackend.Middlewares
 
         private void AttachUserIdToContext(HttpContext context, string userId)
         {
-            Console.WriteLine($"\nJwt Middleware User-Id - {userId}\n");
+            // Console.WriteLine($"\nJwt Middleware User-Id - {userId}\n");
             context.Items["Authorized-User-Id"] = userId;
-            Console.WriteLine($"\nJwt Middleware User-Id - {context.Items["Authorized-User-Id"]}\n");
+            // Console.WriteLine($"\nJwt Middleware User-Id - {context.Items["Authorized-User-Id"]}\n");
         }
     }
 
@@ -59,13 +59,13 @@ namespace ChatGPTBackend.Middlewares
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
             var token = context.HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-            Console.WriteLine($"\nJwt Filter Token - {token}\n");
+            // Console.WriteLine($"\nJwt Filter Token - {token}\n");
             if (token != null)
             {
                 var userId = ValidateToken(token);
-                Console.WriteLine($"\nJwt Filter User-Id - {userId}\n");
+                // Console.WriteLine($"\nJwt Filter User-Id - {userId}\n");
                 context.HttpContext.Items["Authorized-User-Id"] = userId;
-                Console.WriteLine($"\nJwt Filter User-Id - {context.HttpContext.Items["Authorized-User-Id"]}\n");
+                // Console.WriteLine($"\nJwt Filter User-Id - {context.HttpContext.Items["Authorized-User-Id"]}\n");
             }
 
             await next();
