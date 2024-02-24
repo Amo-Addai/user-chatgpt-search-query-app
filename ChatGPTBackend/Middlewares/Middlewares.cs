@@ -112,7 +112,7 @@ namespace ChatGPTBackend.Middlewares
             {
                 // Handle token validation errors
                 Console.WriteLine($"\nToken validation failed: {e.Message}\n");
-                Console.WriteLine("StackTrace: " + e.StackTrace);
+                Console.WriteLine($"\nStackTrace: {e.StackTrace}\n");
             }
             return userId;
         }

@@ -173,6 +173,7 @@ class _HomePageState extends State<HomePage> {
     });
 
     if (query.length > 0) {
+      _queryController.clear();
 
       final response = await postQuery(query);
 
@@ -180,7 +181,19 @@ class _HomePageState extends State<HomePage> {
         // Display response to user
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(response['data']),
+            content: SingleChildScrollView(
+              scrollDirection: Axis.vertical, // Scroll vertically
+              child: Container(
+                padding: const EdgeInsets.all(8.0), // Add padding for better readability
+                child: Text(
+                  response['data'],
+                  textAlign: TextAlign.left,
+                ),
+              ),
+            ), // Text(response['data']),
+            duration: response['data'] == 'ChatGPT Error.' 
+              ? const Duration(seconds: 3) 
+              : const Duration(seconds: 10),
           ),
         );
       } else {
@@ -220,7 +233,7 @@ class _HomePageState extends State<HomePage> {
         snackBars.add(
           SnackBar(
             content: Text('${query['queryText']} : ${query['responseText']}'),
-            duration: const Duration(seconds: 7),
+            duration: const Duration(seconds: 10),
           ),
         );
       });
@@ -232,7 +245,7 @@ class _HomePageState extends State<HomePage> {
             mainAxisSize: MainAxisSize.max,
             children: snackBars.map((snackBar) => snackBar.content!).toList(),
           ),
-          duration: const Duration(seconds: 7),
+          duration: const Duration(seconds: 10),
         ),
       );
 
