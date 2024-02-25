@@ -193,7 +193,6 @@ namespace ChatGPTBackend.Controllers
                 response = "ChatGPT Error.";
             }
 
-            
             return Ok(new { Data = response });
         }
 
