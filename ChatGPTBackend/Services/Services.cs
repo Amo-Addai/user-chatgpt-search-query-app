@@ -209,6 +209,7 @@ namespace ChatGPTBackend.Services
             };
             // Console.WriteLine(JsonSerializer.Serialize(requestPayload));
 
+            // var response = await _httpClient.PostAsJsonAsync($"{apiUrl}/completions", requestPayload); - deprecated model route
             var response = await _httpClient.PostAsJsonAsync($"{apiUrl}/chat/completions", requestPayload);
 
             /* // todo: manual json serialize option
@@ -246,6 +247,7 @@ namespace ChatGPTBackend.Services
 
                     try
                     {
+                        // responseText = responseData?.choices?[0]?.text?.Trim(); - deprecated model response
                         responseText = responseData?.choices?[0]?.message?.content?.Trim();
                         // Console.WriteLine($"{responseText ?? "-"}");
 
