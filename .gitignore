@@ -65,6 +65,7 @@ msbuild.wrn
 .pub-cache/**
 .pub-cache/
 # For iOS
+.DS_STORE
 .DS_Store
 .vscode/
 .idea/

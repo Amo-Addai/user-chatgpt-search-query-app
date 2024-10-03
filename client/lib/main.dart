@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter ChatGPT App',
+      title: 'User - ChatGPT App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),

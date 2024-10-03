@@ -25,6 +25,7 @@
 .pub-cache/**
 .pub-cache/
 # For iOS
+.DS_STORE
 .DS_Store
 .vscode/
 .idea/
@@ -53,9 +54,12 @@
 *.log
 *.pyc
 *.swp
+.DS_STORE
 .DS_Store
 .atom/
 .buildlog/
+.metals/
+.scala-build/
 .history
 .svn/
 migrate_working_dir/
